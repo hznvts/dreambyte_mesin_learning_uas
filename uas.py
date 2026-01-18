@@ -89,19 +89,15 @@ def load_and_train_model():
         model.compile(loss='sparse_categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
         history = model.fit(training_padded, y_train, epochs=100, verbose=0, validation_data=(testing_padded, y_test))
         
-        # === BAGIAN EVALUASI (DIPERBAIKI) ===
         y_pred_prob = model.predict(testing_padded)
         y_pred = np.argmax(y_pred_prob, axis=1)
         
-        # KITA PAKSA AGAR SEMUA LABEL (0, 1, 2) MUNCUL
         labels_index = [0, 1, 2]
         target_names = ['Biasa', 'Penting', 'Spam']
         
-        # Tambahkan parameter 'labels=labels_index' agar kategori 'Penting' tidak hilang
         report_dict = classification_report(y_test, y_pred, labels=labels_index, target_names=target_names, output_dict=True, zero_division=0)
         report_text = classification_report(y_test, y_pred, labels=labels_index, target_names=target_names, zero_division=0)
 
-        # Print ke Terminal (Pasti muncul 3 baris sekarang)
         print("\n=== CLASSIFICATION REPORT ===")
         print(report_text)
         print("===================================\n")
@@ -137,7 +133,6 @@ st.caption("""
 """)
 
 if model is not None:
-    # Tampilkan Akurasi
     acc = history.history['accuracy'][-1] * 100
     val_acc = history.history['val_accuracy'][-1] * 100
     
@@ -150,19 +145,16 @@ if model is not None:
         tombol = st.button("Analisis Pesan", use_container_width=True)
 
         if tombol and pesan:
-            # 1. PROSES PREDIKSI AI (DEEP LEARNING)
             seq = tokenizer.texts_to_sequences([pesan])
             pad = pad_sequences(seq, maxlen=max_length, padding='post', truncating='post')
             prob = model.predict(pad, verbose=0)
             
-            # Ambil hasil tebakan AI
             hasil = np.argmax(prob)
             confidence = np.max(prob) * 100
             
             # ====================================================
             # 2. METODE HYBRID (RULE-BASED OVERRIDE) - FITUR TAMBAHAN
             # ====================================================
-            # Mengecek manual apakah ada kata kunci krusial yang terlewat oleh AI
             
             text_lower = pesan.lower()
             # Daftar kata kunci mutlak (Hard Rules)
@@ -178,7 +170,7 @@ if model is not None:
             # paksa ubah jadi "Penting" (1).
             if hasil == 0 and any(k in text_lower for k in keywords_penting):
                 hasil = 1 
-                confidence = 98.5 # Kita set confidence tinggi karena ini aturan pasti
+                confidence = 98.5
                 kategori_asal = "Hybrid Rule-Based (Override)"
 
             # ====================================================
@@ -199,7 +191,6 @@ if model is not None:
                 st.session_state.biasa.append(pesan)
                 st.success(f"💬 PESAN BIASA ({confidence:.1f}%)")
             
-            # Debugging untuk Presentasi
             with st.expander("🔍 Lihat Detail Teknis (Untuk Demo)"):
                 st.write(f"**Metode Deteksi:** {kategori_asal}")
                 st.write("**Probabilitas Murni AI:**")
