@@ -6,6 +6,14 @@
 import streamlit as st
 import numpy as np
 import pandas as pd
+import random
+import tensorflow as tf
+
+seed_value = 42
+random.seed(seed_value)
+np.random.seed(seed_value)
+tf.random.set_seed(seed_value)
+
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Embedding, Dense, GlobalAveragePooling1D, Dropout
 from tensorflow.keras.preprocessing.text import Tokenizer
